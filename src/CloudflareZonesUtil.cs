@@ -251,15 +251,16 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             var responseObj = await JsonUtil.Deserialize<Zones_apiResponseSingleId>(response, _logger, cancellationToken);
             if (responseObj?.Success != true)
             {
-                throw new Exception("Failed to get zone details - API call was not successful");
+                throw new Exception($"Failed to get zone details - API call was not successful: {responseObj?.Errors?.FirstOrDefault()?.Message ?? "Unknown error"}");
             }
 
-            if (responseObj.Result == null)
+            if (responseObj.Result?.Id?.Value == null)
             {
-                throw new Exception("Failed to get zone details - no zone data in response");
+                throw new Exception("Failed to get zone details - no zone ID in response");
             }
 
-            _logger.LogInformation("Successfully retrieved zone details for domain {DomainName}", domainName);
+            _logger.LogInformation("Successfully retrieved zone details for domain {DomainName} with ID {ZoneId}", 
+                domainName, responseObj.Result.Id.Value);
             return responseObj;
         }
         catch (Exception ex)
@@ -280,19 +281,30 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             Zones_apiResponseSingleId zoneResponse = await Get(domainName, cancellationToken);
 
-            if (zoneResponse.Result?.AdditionalData == null || 
-                !zoneResponse.Result.AdditionalData.TryGetValue("name_servers", out object? nameserversObj) ||
-                nameserversObj is not IList<object> nameservers)
+            if (zoneResponse.Result?.AdditionalData == null)
             {
-                throw new Exception("Failed to get nameservers - no nameservers in response");
+                throw new Exception("Failed to get nameservers - no additional data in response");
             }
 
-            List<string> nameserverList = nameservers.Select(ns => ns.ToString() ?? string.Empty)
-                                                     .Where(ns => !string.IsNullOrEmpty(ns))
-                                                     .ToList();
+            if (!zoneResponse.Result.AdditionalData.TryGetValue("name_servers", out object? nameserversObj))
+            {
+                throw new Exception("Failed to get nameservers - no nameservers field in response");
+            }
 
-            _logger.LogInformation("Successfully retrieved {Count} nameservers for domain {DomainName}", 
-                nameserverList.Count, domainName);
+            if (nameserversObj is not IList<object> nameservers || nameservers.Count == 0)
+            {
+                throw new Exception("Failed to get nameservers - invalid or empty nameservers data");
+            }
+
+            List<string> nameserverList = nameservers.Select(ns => 
+            {
+                if (ns == null)
+                    throw new Exception("Failed to get nameservers - null nameserver entry found");
+                return ns.ToString() ?? throw new Exception("Failed to get nameservers - empty nameserver entry found");
+            }).ToList();
+
+            _logger.LogInformation("Successfully retrieved {Count} nameservers for domain {DomainName}: {Nameservers}", 
+                nameserverList.Count, domainName, string.Join(", ", nameserverList));
 
             return nameserverList;
         }

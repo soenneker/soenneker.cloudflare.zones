@@ -1,5 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Soenneker.Cloudflare.OpenApiClient.Models;
 
 namespace Soenneker.Cloudflare.Zones.Abstract;
 
@@ -30,7 +32,7 @@ public interface ICloudflareZonesUtil
     /// </summary>
     /// <param name="domainName">The domain name to look up.</param>
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
-    /// <returns>A task that returns the zone ID if found, or null otherwise.</returns>
+    /// <returns>A task that returns the zone ID if found, or throws an exception if not found.</returns>
     ValueTask<string> GetId(string domainName, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -40,4 +42,20 @@ public interface ICloudflareZonesUtil
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
     /// <returns>A task that returns true if the site was successfully removed, or false if it did not exist.</returns>
     ValueTask<bool> Remove(string domainName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets detailed information about a zone.
+    /// </summary>
+    /// <param name="domainName">The domain name to get information for.</param>
+    /// <param name="cancellationToken">Optional cancellation token for the request.</param>
+    /// <returns>A task that returns the zone details.</returns>
+    ValueTask<Zones_apiResponseSingleId> Get(string domainName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the nameservers for a zone.
+    /// </summary>
+    /// <param name="domainName">The domain name to get nameservers for.</param>
+    /// <param name="cancellationToken">Optional cancellation token for the request.</param>
+    /// <returns>A task that returns a list of nameservers.</returns>
+    ValueTask<IReadOnlyList<string>> GetNameservers(string domainName, CancellationToken cancellationToken = default);
 }

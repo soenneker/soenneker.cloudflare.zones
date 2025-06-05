@@ -270,7 +270,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         }
     }
 
-    public async ValueTask<IReadOnlyList<string>> GetNameservers(string domainName, CancellationToken cancellationToken = default)
+    public async ValueTask<List<string>> GetNameservers(string domainName, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(domainName))
             throw new ArgumentException("Domain name cannot be empty", nameof(domainName));

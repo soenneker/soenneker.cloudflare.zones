@@ -57,5 +57,5 @@ public interface ICloudflareZonesUtil
     /// <param name="domainName">The domain name to get nameservers for.</param>
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
     /// <returns>A task that returns a list of nameservers.</returns>
-    ValueTask<IReadOnlyList<string>> GetNameservers(string domainName, CancellationToken cancellationToken = default);
+    ValueTask<List<string>> GetNameservers(string domainName, CancellationToken cancellationToken = default);
 }

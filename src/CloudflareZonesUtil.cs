@@ -50,7 +50,28 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 Type = new Zones_type {Value = Zones_type_Value.Full}
             };
 
-            Stream? response = await client.Zones.PostAsync(request, cancellationToken: cancellationToken);
+            Stream? response;
+            try 
+            {
+                response = await client.Zones.PostAsync(request, cancellationToken: cancellationToken);
+                if (response != null)
+                {
+                    using var reader = new StreamReader(response);
+                    string responseContent = await reader.ReadToEndAsync(cancellationToken);
+                    _logger.LogDebug("Cloudflare API response for adding site {DomainName}: {ResponseContent}", 
+                        domainName, responseContent);
+                    
+                    // Reset the stream position for subsequent processing
+                    response.Position = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Cloudflare API to add site {DomainName}. Request details: AccountId={AccountId}", 
+                    domainName, accountId);
+                throw new Exception($"Failed to call Cloudflare API to add site {domainName}: {ex.Message}", ex);
+            }
+
             if (response == null)
             {
                 throw new Exception("Failed to add site - no response received");
@@ -59,7 +80,11 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             var responseObj = await JsonUtil.Deserialize<Zones_apiResponseSingleId>(response, _logger, cancellationToken);
             if (responseObj?.Success != true)
             {
-                throw new Exception("Failed to add site - API call was not successful");
+                string errorMessage = responseObj?.Errors?.FirstOrDefault()?.Message ?? "Unknown error";
+                string errorCode = responseObj?.Errors?.FirstOrDefault()?.Code ?? "Unknown code";
+                _logger.LogError("Failed to add site - API call was not successful. Error: {ErrorCode} - {ErrorMessage}", 
+                    errorCode, errorMessage);
+                throw new Exception($"Failed to add site - API call was not successful. Error: {errorCode} - {errorMessage}");
             }
 
             if (responseObj.Result?.Id?.Value == null)

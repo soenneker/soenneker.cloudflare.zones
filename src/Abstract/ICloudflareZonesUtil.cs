@@ -49,7 +49,7 @@ public interface ICloudflareZonesUtil
     /// <param name="domainName">The domain name to get information for.</param>
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
     /// <returns>A task that returns the zone details.</returns>
-    ValueTask<Zones_apiResponseSingleId> Get(string domainName, CancellationToken cancellationToken = default);
+    ValueTask<Zones_0_get_Response_200_application_json> Get(string domainName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the nameservers for a zone.

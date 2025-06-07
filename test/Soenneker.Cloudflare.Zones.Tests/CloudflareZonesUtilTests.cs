@@ -29,13 +29,13 @@ public class CloudflareZonesUtilTests : FixturedUnitTest
     [LocalFact]
     public async ValueTask Add()
     {
-        await _util.Add("clarityhealthguard.com", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), CancellationToken);
+        await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), CancellationToken);
     }
 
     [LocalFact]
     public async ValueTask GetNameservers()
     {
-        var result = await _util.GetNameservers("clarityhealthguard.com", CancellationToken);
+        var result = await _util.GetNameservers("", CancellationToken);
         result.Should().NotBeNullOrEmpty();
     }
 }

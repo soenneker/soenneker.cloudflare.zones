@@ -237,13 +237,12 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         {
             CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken);
 
-            string? zoneId = await GetId(domainName, cancellationToken);
-            if (string.IsNullOrEmpty(zoneId))
+            var requestConfig = new Action<RequestConfiguration<ZonesRequestBuilder.ZonesRequestBuilderGetQueryParameters>>(config =>
             {
-                throw new CloudflareApiException($"Zone not found for domain {domainName}", domainName);
-            }
+                config.QueryParameters.Name = domainName;
+            });
 
-            var response = await client.Zones[zoneId].GetAsync(cancellationToken: cancellationToken);
+            var response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken);
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to get zone details - no response received", domainName);
@@ -257,13 +256,14 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 throw new CloudflareApiException($"Failed to get zone details - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
             }
 
-            if (response.Result?.Id == null)
+            var zone = response.Result?.FirstOrDefault();
+            if (zone?.Id == null)
             {
-                throw new CloudflareApiException("Failed to get zone details - no zone ID in response", domainName);
+                throw new CloudflareApiException($"Zone not found for domain {domainName}", domainName);
             }
 
-            _logger.LogInformation("Successfully retrieved zone details for domain {DomainName} with ID {ZoneId}", domainName, response.Result.Id);
-            return response.Result;
+            _logger.LogInformation("Successfully retrieved zone details for domain {DomainName} with ID {ZoneId}", domainName, zone.Id);
+            return zone;
         }
         catch (Zones_apiResponseCommonFailure failure)
         {

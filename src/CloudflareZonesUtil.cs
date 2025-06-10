@@ -89,20 +89,6 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         }
     }
 
-    /// <summary>
-    /// Custom exception for Cloudflare API errors
-    /// </summary>
-    public class CloudflareApiException : Exception
-    {
-        public string DomainName { get; }
-
-        public CloudflareApiException(string message, string domainName, Exception? innerException = null) 
-            : base(message, innerException)
-        {
-            DomainName = domainName;
-        }
-    }
-
     public async ValueTask<bool> Exists(string domainName, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(domainName))
@@ -167,28 +153,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
         try
         {
-            CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken);
-
-            var requestConfig = new Action<RequestConfiguration<ZonesRequestBuilder.ZonesRequestBuilderGetQueryParameters>>(config =>
-            {
-                config.QueryParameters.Name = domainName;
-            });
-
-            var response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken);
-            if (response == null)
-            {
-                throw new CloudflareApiException("Failed to get zone ID - no response received", domainName);
-            }
-
-            if (response.Success != true)
-            {
-                var error = response.Errors?.FirstOrDefault();
-                var errorMessage = error?.Message ?? "Unknown error";
-                var errorCode = error?.Code?.ToString() ?? "Unknown";
-                throw new CloudflareApiException($"Failed to get zone ID - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
-            }
-
-            var zone = response.Result?.FirstOrDefault(z => z.Name?.Equals(domainName, StringComparison.OrdinalIgnoreCase) == true);
+            var zone = await Get(domainName, cancellationToken);
             if (zone?.Id == null)
             {
                 _logger.LogWarning("No matching zone found for domain {DomainName}", domainName);
@@ -198,15 +163,10 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogInformation("Successfully retrieved zone ID {ZoneId} for domain {DomainName}", zone.Id, domainName);
             return zone.Id;
         }
-        catch (Zones_apiResponseCommonFailure failure)
+        catch (CloudflareApiException)
         {
-            _logger.LogError(failure, "Cloudflare API error getting zone ID for {DomainName}", domainName);
-            throw new CloudflareApiException($"Failed to get zone ID for {domainName}: {failure.Message}", domainName, failure);
-        }
-        catch (Exception ex) when (ex is not CloudflareApiException)
-        {
-            _logger.LogError(ex, "Error getting zone ID for domain {DomainName}", domainName);
-            throw new CloudflareApiException($"Error getting zone ID for domain {domainName}", domainName, ex);
+            _logger.LogWarning("No matching zone found for domain {DomainName}", domainName);
+            return null;
         }
     }
 
@@ -262,7 +222,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         }
     }
 
-    public async ValueTask<Zones_0_get_Response_200_application_json> Get(string domainName, CancellationToken cancellationToken = default)
+    public async ValueTask<Zones_zone> Get(string domainName, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(domainName))
             throw new ArgumentException("Domain name cannot be empty", nameof(domainName));
@@ -303,7 +263,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             }
 
             _logger.LogInformation("Successfully retrieved zone details for domain {DomainName} with ID {ZoneId}", domainName, response.Result.Id);
-            return response;
+            return response.Result;
         }
         catch (Zones_apiResponseCommonFailure failure)
         {

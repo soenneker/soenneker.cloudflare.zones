@@ -33,7 +33,7 @@ public interface ICloudflareZonesUtil
     /// <param name="domainName">The domain name to look up.</param>
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
     /// <returns>A task that returns the zone ID if found, or throws an exception if not found.</returns>
-    ValueTask<string> GetId(string domainName, CancellationToken cancellationToken = default);
+    ValueTask<string?> GetId(string domainName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes a site from Cloudflare.

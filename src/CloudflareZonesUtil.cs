@@ -6,13 +6,12 @@ using Soenneker.Cloudflare.Utils.Client.Abstract;
 using Soenneker.Cloudflare.Zones.Abstract;
 using System;
 using System.Threading.Tasks;
-using Soenneker.Utils.Json;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Kiota.Abstractions;
 using Soenneker.Extensions.ValueTask;
-using System.Text.Json;
+using Soenneker.Cloudflare.OpenApiClient.Zones.Item;
 
 namespace Soenneker.Cloudflare.Zones;
 
@@ -45,10 +44,10 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         {
             CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken);
 
-            var request = new Zones_post_RequestBody_application_json
+            var request = new Zones_post
             {
                 Name = domainName,
-                Account = new Zones_post_RequestBody_application_json_account
+                Account = new Zones_post_account
                 {
                     Id = accountId
                 },
@@ -192,8 +191,8 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 return false;
             }
 
-            var request = new Zones_0_delete_RequestBody_application_json();
-            var response = await client.Zones[zoneId].DeleteAsync(request, cancellationToken: cancellationToken);
+            var body = new Zone_identifierDeleteRequestBody();
+            var response = await client.Zones[zoneId].DeleteAsync(body, null, cancellationToken);
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to remove site - no response received", domainName);
@@ -290,7 +289,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
         try
         {
-            CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken);
+            CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken).NoSync();
 
             string? zoneId = await GetId(domainName, cancellationToken);
             if (string.IsNullOrEmpty(zoneId))

@@ -1,4 +1,5 @@
-﻿using AwesomeAssertions;
+﻿using System.Collections.Generic;
+using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Soenneker.Cloudflare.Zones.Abstract;
 using Soenneker.Extensions.Configuration;
@@ -35,7 +36,7 @@ public class CloudflareZonesUtilTests : FixturedUnitTest
     [LocalFact]
     public async ValueTask GetNameservers()
     {
-        var result = await _util.GetNameservers("", CancellationToken);
+        List<string> result = await _util.GetNameservers("", CancellationToken);
         result.Should().NotBeNullOrEmpty();
     }
 }

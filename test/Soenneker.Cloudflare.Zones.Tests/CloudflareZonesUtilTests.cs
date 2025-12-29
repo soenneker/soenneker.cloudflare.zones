@@ -3,9 +3,9 @@ using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Soenneker.Cloudflare.Zones.Abstract;
 using Soenneker.Extensions.Configuration;
-using Soenneker.Facts.Local;
 using Soenneker.Tests.FixturedUnit;
 using System.Threading.Tasks;
+using Soenneker.Facts.Manual;
 using Xunit;
 
 namespace Soenneker.Cloudflare.Zones.Tests;
@@ -27,16 +27,19 @@ public class CloudflareZonesUtilTests : FixturedUnitTest
     {
     }
 
-    [LocalFact]
+    [ManualFact]
+    // [LocalFact]
     public async ValueTask Add()
     {
         await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), CancellationToken);
     }
 
-    [LocalFact]
+    [ManualFact]
+    // [LocalFact]
     public async ValueTask GetNameservers()
     {
         List<string> result = await _util.GetNameservers("", CancellationToken);
-        result.Should().NotBeNullOrEmpty();
+        result.Should()
+              .NotBeNullOrEmpty();
     }
 }

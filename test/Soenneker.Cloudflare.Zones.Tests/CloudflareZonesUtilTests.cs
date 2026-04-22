@@ -1,41 +1,40 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Soenneker.Cloudflare.Zones.Abstract;
 using Soenneker.Extensions.Configuration;
-using Soenneker.Tests.FixturedUnit;
+using Soenneker.Tests.HostedUnit;
 using System.Threading.Tasks;
 using Soenneker.Facts.Manual;
-using Xunit;
 
 namespace Soenneker.Cloudflare.Zones.Tests;
 
-[Collection("Collection")]
-public class CloudflareZonesUtilTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class CloudflareZonesUtilTests : HostedUnitTest
 {
     private readonly ICloudflareZonesUtil _util;
     private readonly IConfiguration _configuration;
 
-    public CloudflareZonesUtilTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public CloudflareZonesUtilTests(Host host) : base(host)
     {
         _util = Resolve<ICloudflareZonesUtil>(true);
         _configuration = Resolve<IConfiguration>();
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
     }
 
     [ManualFact]
-    // [LocalFact]
+    // [LocalOnly]
     public async ValueTask Add()
     {
         await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), CancellationToken);
     }
 
     [ManualFact]
-    // [LocalFact]
+    // [LocalOnly]
     public async ValueTask GetNameservers()
     {
         List<string> result = await _util.GetNameservers("", CancellationToken);

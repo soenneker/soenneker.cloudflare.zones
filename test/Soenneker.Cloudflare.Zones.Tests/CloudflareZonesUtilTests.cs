@@ -5,7 +5,6 @@ using Soenneker.Cloudflare.Zones.Abstract;
 using Soenneker.Extensions.Configuration;
 using Soenneker.Tests.HostedUnit;
 using System.Threading.Tasks;
-using Soenneker.Facts.Manual;
 
 namespace Soenneker.Cloudflare.Zones.Tests;
 
@@ -26,14 +25,14 @@ public class CloudflareZonesUtilTests : HostedUnitTest
     {
     }
 
-    [ManualFact]
+    [Skip("Manual")]
     // [LocalOnly]
     public async ValueTask Add()
     {
         await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), CancellationToken);
     }
 
-    [ManualFact]
+    [Skip("Manual")]
     // [LocalOnly]
     public async ValueTask GetNameservers()
     {

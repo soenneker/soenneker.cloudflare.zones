@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Soenneker.Cloudflare.Zones.Abstract;
@@ -27,16 +28,16 @@ public class CloudflareZonesUtilTests : HostedUnitTest
 
     [Skip("Manual")]
     // [LocalOnly]
-    public async ValueTask Add()
+    public async ValueTask Add(CancellationToken cancellationToken)
     {
-        await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), CancellationToken);
+        await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), cancellationToken);
     }
 
     [Skip("Manual")]
     // [LocalOnly]
-    public async ValueTask GetNameservers()
+    public async ValueTask GetNameservers(CancellationToken cancellationToken)
     {
-        List<string> result = await _util.GetNameservers("", CancellationToken);
+        List<string> result = await _util.GetNameservers("", cancellationToken);
         result.Should()
               .NotBeNullOrEmpty();
     }

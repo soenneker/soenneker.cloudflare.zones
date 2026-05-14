@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Soenneker.Cloudflare.OpenApiClient.Models;
@@ -49,7 +49,7 @@ public interface ICloudflareZonesUtil
     /// <param name="domainName">The domain name to get information for.</param>
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
     /// <returns>A task that returns the zone details.</returns>
-    ValueTask<Zones_zone> Get(string domainName, CancellationToken cancellationToken = default);
+    ValueTask<ZonesZone> Get(string domainName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the nameservers for a zone.

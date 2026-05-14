@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Soenneker.Cloudflare.OpenApiClient;
 using Soenneker.Cloudflare.OpenApiClient.Models;
 using Soenneker.Cloudflare.OpenApiClient.Zones;
@@ -46,17 +46,17 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         {
             CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken).NoSync();
 
-            var request = new Zones_post
+            var request = new ZonesPost
             {
                 Name = domainName,
-                Account = new Zones_post_account
+                Account = new ZonesPost_account
                 {
                     Id = accountId
                 },
-                Type = Zones_type.Full
+                Type = ZonesType.Full
             };
 
-            Zones_post_200? response = await client.Zones.PostAsync(request, cancellationToken: cancellationToken).NoSync();
+            ZonesPost200? response = await client.Zones.PostAsync(request, cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to add site - no response received", domainName);
@@ -64,7 +64,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             if (response.Success != true)
             {
-                Zones_messages_item? error = response.Errors?.FirstOrDefault();
+                ZonesMessagesItem? error = response.Errors?.FirstOrDefault();
                 string errorMessage = error?.Message ?? "Unknown error";
                 string errorCode = error?.Code?.ToString() ?? "Unknown";
                 throw new CloudflareApiException($"Failed to add site - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
@@ -78,7 +78,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogInformation("Successfully added site {DomainName} with zone ID {ZoneId}", domainName, response.Result.Id);
             return response.Result.Id;
         }
-        catch (Zones_api_response_common_failure failure)
+        catch (ZonesApiResponseCommonFailure failure)
         {
             _logger.LogError(failure, "Cloudflare API error adding site {DomainName}. Request details: AccountId={AccountId}", domainName, accountId);
             throw new CloudflareApiException($"Failed to add site {domainName}: {failure.Message}", domainName, failure);
@@ -110,7 +110,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 config.QueryParameters.Name = domainName;
             });
 
-            Zones_get_200? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
+            ZonesGet200? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to check site existence - no response received", domainName);
@@ -118,7 +118,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             if (response.Success != true)
             {
-                Zones_messages_item? error = response.Errors?.FirstOrDefault();
+                ZonesMessagesItem? error = response.Errors?.FirstOrDefault();
                 string errorMessage = error?.Message ?? "Unknown error";
                 string errorCode = error?.Code?.ToString() ?? "Unknown";
                 throw new CloudflareApiException($"Failed to check site existence - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
@@ -129,7 +129,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogInformation("Site {DomainName} {Exists} in Cloudflare", domainName, exists ? "exists" : "does not exist");
             return exists;
         }
-        catch (Zones_api_response_common_failure failure)
+        catch (ZonesApiResponseCommonFailure failure)
         {
             _logger.LogError(failure, "Cloudflare API error checking site existence for {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to check site existence for {domainName}: {failure.Message}", domainName, failure);
@@ -154,7 +154,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
         try
         {
-            Zones_zone? zone = await Get(domainName, cancellationToken).NoSync();
+            ZonesZone? zone = await Get(domainName, cancellationToken).NoSync();
 
             if (zone?.Id == null)
             {
@@ -195,7 +195,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             }
 
             var body = new Zone_identifierDeleteRequestBody();
-            Zones_api_response_single_id? response = await client.Zones[zoneId].DeleteAsync(body, null, cancellationToken).NoSync();
+            ZonesApiResponseSingleId? response = await client.Zones[zoneId].DeleteAsync(body, null, cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to remove site - no response received", domainName);
@@ -203,7 +203,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             if (response.Success != true)
             {
-                Zones_messages_item? error = response.Errors?.FirstOrDefault();
+                ZonesMessagesItem? error = response.Errors?.FirstOrDefault();
                 string errorMessage = error?.Message ?? "Unknown error";
                 string errorCode = error?.Code?.ToString() ?? "Unknown";
                 throw new CloudflareApiException($"Failed to remove site - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
@@ -212,7 +212,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogInformation("Successfully removed site {DomainName}", domainName);
             return true;
         }
-        catch (Zones_api_response_common_failure failure)
+        catch (ZonesApiResponseCommonFailure failure)
         {
             _logger.LogError(failure, "Cloudflare API error removing site {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to remove site {domainName}: {failure.Message}", domainName, failure);
@@ -224,7 +224,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         }
     }
 
-    public async ValueTask<Zones_zone> Get(string domainName, CancellationToken cancellationToken = default)
+    public async ValueTask<ZonesZone> Get(string domainName, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(domainName))
             throw new ArgumentException("Domain name cannot be empty", nameof(domainName));
@@ -244,7 +244,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 config.QueryParameters.Name = domainName;
             });
 
-            Zones_get_200? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
+            ZonesGet200? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to get zone details - no response received", domainName);
@@ -252,13 +252,13 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             if (response.Success != true)
             {
-                Zones_messages_item? error = response.Errors?.FirstOrDefault();
+                ZonesMessagesItem? error = response.Errors?.FirstOrDefault();
                 string errorMessage = error?.Message ?? "Unknown error";
                 string errorCode = error?.Code?.ToString() ?? "Unknown";
                 throw new CloudflareApiException($"Failed to get zone details - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
             }
 
-            Zones_zone? zone = response.Result?.FirstOrDefault();
+            ZonesZone? zone = response.Result?.FirstOrDefault();
 
             if (zone?.Id == null)
             {
@@ -268,7 +268,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogInformation("Successfully retrieved zone details for domain {DomainName} with ID {ZoneId}", domainName, zone.Id);
             return zone;
         }
-        catch (Zones_api_response_common_failure failure)
+        catch (ZonesApiResponseCommonFailure failure)
         {
             _logger.LogError(failure, "Cloudflare API error getting zone details for {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to get zone details for {domainName}: {failure.Message}", domainName, failure);
@@ -301,7 +301,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 throw new CloudflareApiException($"Zone not found for domain {domainName}", domainName);
             }
 
-            Zones_0_get_200? response = await client.Zones[zoneId].GetAsync(cancellationToken: cancellationToken).NoSync();
+            Zones0Get200? response = await client.Zones[zoneId].GetAsync(cancellationToken: cancellationToken).NoSync();
 
             if (response == null)
             {
@@ -310,7 +310,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             if (response.Success != true)
             {
-                Zones_messages_item? error = response.Errors?.FirstOrDefault();
+                ZonesMessagesItem? error = response.Errors?.FirstOrDefault();
                 string errorMessage = error?.Message ?? "Unknown error";
                 string errorCode = error?.Code?.ToString() ?? "Unknown";
                 throw new CloudflareApiException($"Failed to get zone details - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
@@ -328,7 +328,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             return nameserverList;
         }
-        catch (Zones_api_response_common_failure failure)
+        catch (ZonesApiResponseCommonFailure failure)
         {
             _logger.LogError(failure, "Cloudflare API error getting nameservers for {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to get nameservers for {domainName}: {failure.Message}", domainName, failure);

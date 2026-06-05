@@ -7,6 +7,9 @@ namespace Soenneker.Cloudflare.Zones;
 /// </summary>
 public class CloudflareApiException : Exception
 {
+    /// <summary>
+    /// Gets domain name.
+    /// </summary>
     public string DomainName { get; }
 
     public CloudflareApiException(string message, string domainName, Exception? innerException = null) 

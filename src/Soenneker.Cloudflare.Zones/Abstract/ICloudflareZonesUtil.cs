@@ -36,6 +36,15 @@ public interface ICloudflareZonesUtil
     ValueTask<string?> GetId(string domainName, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the Cloudflare zone ID for a specified domain using the specified API key.
+    /// </summary>
+    /// <param name="domainName">The domain name to look up.</param>
+    /// <param name="apiKey">The Cloudflare API key to use for the request.</param>
+    /// <param name="cancellationToken">Optional cancellation token for the request.</param>
+    /// <returns>A task that returns the zone ID if found, or <see langword="null"/> if not found.</returns>
+    ValueTask<string?> GetId(string domainName, string apiKey, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Removes a site from Cloudflare.
     /// </summary>
     /// <param name="domainName">The domain name to remove.</param>
@@ -50,6 +59,15 @@ public interface ICloudflareZonesUtil
     /// <param name="cancellationToken">Optional cancellation token for the request.</param>
     /// <returns>A task that returns the zone details.</returns>
     ValueTask<ZonesZone> Get(string domainName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets detailed information about a zone using the specified API key.
+    /// </summary>
+    /// <param name="domainName">The domain name to get information for.</param>
+    /// <param name="apiKey">The Cloudflare API key to use for the request.</param>
+    /// <param name="cancellationToken">Optional cancellation token for the request.</param>
+    /// <returns>A task that returns the zone details.</returns>
+    ValueTask<ZonesZone> Get(string domainName, string apiKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the nameservers for a zone.

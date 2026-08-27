@@ -141,7 +141,16 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         }
     }
 
-    public async ValueTask<string?> GetId(string domainName, CancellationToken cancellationToken = default)
+    public ValueTask<string?> GetId(string domainName, CancellationToken cancellationToken = default) =>
+        GetIdCore(domainName, null, cancellationToken);
+
+    public ValueTask<string?> GetId(string domainName, string apiKey, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        return GetIdCore(domainName, apiKey, cancellationToken);
+    }
+
+    private async ValueTask<string?> GetIdCore(string domainName, string? apiKey, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(domainName))
             throw new ArgumentException("Domain name cannot be empty", nameof(domainName));
@@ -154,7 +163,9 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
         try
         {
-            ZonesZone? zone = await Get(domainName, cancellationToken).NoSync();
+            ZonesZone? zone = apiKey == null
+                ? await Get(domainName, cancellationToken).NoSync()
+                : await Get(domainName, apiKey, cancellationToken).NoSync();
 
             if (zone?.Id == null)
             {
@@ -224,7 +235,16 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         }
     }
 
-    public async ValueTask<ZonesZone> Get(string domainName, CancellationToken cancellationToken = default)
+    public ValueTask<ZonesZone> Get(string domainName, CancellationToken cancellationToken = default) =>
+        GetCore(domainName, null, cancellationToken);
+
+    public ValueTask<ZonesZone> Get(string domainName, string apiKey, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        return GetCore(domainName, apiKey, cancellationToken);
+    }
+
+    private async ValueTask<ZonesZone> GetCore(string domainName, string? apiKey, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(domainName))
             throw new ArgumentException("Domain name cannot be empty", nameof(domainName));
@@ -237,7 +257,9 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
         try
         {
-            CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken).NoSync();
+            CloudflareOpenApiClient client = apiKey == null
+                ? await _clientUtil.Get(cancellationToken).NoSync()
+                : await _clientUtil.Get(apiKey, cancellationToken).NoSync();
 
             var requestConfig = new Action<RequestConfiguration<ZonesRequestBuilder.ZonesRequestBuilderGetQueryParameters>>(config =>
             {

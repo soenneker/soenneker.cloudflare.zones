@@ -16,7 +16,6 @@ using Soenneker.Extensions.Task;
 
 namespace Soenneker.Cloudflare.Zones;
 
-///<inheritdoc cref="ICloudflareZonesUtil"/>
 public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 {
     private readonly ILogger<CloudflareZonesUtil> _logger;
@@ -83,7 +82,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogError(failure, "Cloudflare API error adding site {DomainName}. Request details: AccountId={AccountId}", domainName, accountId);
             throw new CloudflareApiException($"Failed to add site {domainName}: {failure.Message}", domainName, failure);
         }
-        catch (Exception ex) when (ex is not CloudflareApiException)
+        catch (Exception ex) when (ex is not CloudflareApiException and not OperationCanceledException)
         {
             _logger.LogError(ex, "Error adding site {DomainName} to Cloudflare", domainName);
             throw new CloudflareApiException($"Error adding site {domainName} to Cloudflare", domainName, ex);
@@ -134,7 +133,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogError(failure, "Cloudflare API error checking site existence for {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to check site existence for {domainName}: {failure.Message}", domainName, failure);
         }
-        catch (Exception ex) when (ex is not CloudflareApiException)
+        catch (Exception ex) when (ex is not CloudflareApiException and not OperationCanceledException)
         {
             _logger.LogError(ex, "Error checking if site {DomainName} exists in Cloudflare", domainName);
             throw new CloudflareApiException($"Error checking if site {domainName} exists in Cloudflare", domainName, ex);
@@ -176,7 +175,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogInformation("Successfully retrieved zone ID {ZoneId} for domain {DomainName}", zone.Id, domainName);
             return zone.Id;
         }
-        catch (CloudflareApiException)
+        catch (CloudflareZoneNotFoundException)
         {
             _logger.LogWarning("No matching zone found for domain {DomainName}", domainName);
             return null;
@@ -228,7 +227,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogError(failure, "Cloudflare API error removing site {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to remove site {domainName}: {failure.Message}", domainName, failure);
         }
-        catch (Exception ex) when (ex is not CloudflareApiException)
+        catch (Exception ex) when (ex is not CloudflareApiException and not OperationCanceledException)
         {
             _logger.LogError(ex, "Error removing site {DomainName} from Cloudflare", domainName);
             throw new CloudflareApiException($"Error removing site {domainName} from Cloudflare", domainName, ex);
@@ -284,7 +283,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             if (zone?.Id == null)
             {
-                throw new CloudflareApiException($"Zone not found for domain {domainName}", domainName);
+                throw new CloudflareZoneNotFoundException(domainName);
             }
 
             _logger.LogInformation("Successfully retrieved zone details for domain {DomainName} with ID {ZoneId}", domainName, zone.Id);
@@ -295,7 +294,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogError(failure, "Cloudflare API error getting zone details for {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to get zone details for {domainName}: {failure.Message}", domainName, failure);
         }
-        catch (Exception ex) when (ex is not CloudflareApiException)
+        catch (Exception ex) when (ex is not CloudflareApiException and not OperationCanceledException)
         {
             _logger.LogError(ex, "Error getting zone details for domain {DomainName}", domainName);
             throw new CloudflareApiException($"Error getting zone details for domain {domainName}", domainName, ex);
@@ -355,7 +354,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
             _logger.LogError(failure, "Cloudflare API error getting nameservers for {DomainName}", domainName);
             throw new CloudflareApiException($"Failed to get nameservers for {domainName}: {failure.Message}", domainName, failure);
         }
-        catch (Exception ex) when (ex is not CloudflareApiException)
+        catch (Exception ex) when (ex is not CloudflareApiException and not OperationCanceledException)
         {
             _logger.LogError(ex, "Error getting nameservers for domain {DomainName}", domainName);
             throw new CloudflareApiException($"Error getting nameservers for domain {domainName}", domainName, ex);

@@ -17,4 +17,7 @@ public class CloudflareApiException : Exception
     {
         DomainName = domainName;
     }
-} 
+}
+
+internal sealed class CloudflareZoneNotFoundException(string domainName)
+    : CloudflareApiException($"Zone not found for domain {domainName}", domainName);

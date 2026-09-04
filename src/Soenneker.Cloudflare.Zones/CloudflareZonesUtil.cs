@@ -124,7 +124,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 throw new CloudflareApiException($"Failed to check site existence - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
             }
 
-            bool exists = response.Result?.Any() == true;
+            bool exists = response.Result is { Count: > 0 };
             
             _logger.LogInformation("Site {DomainName} {Exists} in Cloudflare", domainName, exists ? "exists" : "does not exist");
             return exists;
@@ -338,12 +338,12 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 throw new CloudflareApiException($"Failed to get zone details - API call was not successful. Error: {errorCode} - {errorMessage}", domainName);
             }
 
-            if (response.Result?.NameServers == null || !response.Result.NameServers.Any())
+            if (response.Result?.NameServers is not { Count: > 0 })
             {
                 throw new CloudflareApiException("Failed to get nameservers - no nameservers in response", domainName);
             }
 
-            List<string> nameserverList = response.Result.NameServers.ToList();
+            List<string> nameserverList = response.Result.NameServers;
 
             _logger.LogInformation("Successfully retrieved {Count} nameservers for domain {DomainName}: {Nameservers}", 
                 nameserverList.Count, domainName, string.Join(", ", nameserverList));

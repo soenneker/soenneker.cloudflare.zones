@@ -16,6 +16,7 @@ using Soenneker.Extensions.Task;
 
 namespace Soenneker.Cloudflare.Zones;
 
+/// <inheritdoc cref="ICloudflareZonesUtil" />
 public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 {
     private readonly ILogger<CloudflareZonesUtil> _logger;

@@ -345,8 +345,11 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
 
             List<string> nameserverList = response.Result.NameServers;
 
-            _logger.LogInformation("Successfully retrieved {Count} nameservers for domain {DomainName}: {Nameservers}", 
-                nameserverList.Count, domainName, string.Join(", ", nameserverList));
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation("Successfully retrieved {Count} nameservers for domain {DomainName}: {Nameservers}",
+                    nameserverList.Count, domainName, string.Join(", ", nameserverList));
+            }
 
             return nameserverList;
         }

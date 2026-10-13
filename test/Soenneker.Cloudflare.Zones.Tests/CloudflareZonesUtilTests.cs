@@ -30,7 +30,7 @@ public class CloudflareZonesUtilTests : HostedUnitTest
     // [LocalOnly]
     public async ValueTask Add(CancellationToken cancellationToken)
     {
-        await _util.Add("", _configuration.GetValueStrict<string>("Cloudflare:AccountId"), cancellationToken);
+        await _util.Add("", _configuration.GetStringStrict("Cloudflare:AccountId"), cancellationToken);
     }
 
     [Skip("Manual")]

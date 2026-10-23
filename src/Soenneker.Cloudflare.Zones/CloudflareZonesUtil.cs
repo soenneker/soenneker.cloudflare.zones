@@ -46,17 +46,17 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
         {
             CloudflareOpenApiClient client = await _clientUtil.Get(cancellationToken).NoSync();
 
-            var request = new ZonesPost
+            var request = new ZonesPostRequest
             {
                 Name = domainName,
-                Account = new ZonesPost_account
+                Account = new ZonesPostRequestAccount
                 {
                     Id = accountId
                 },
                 Type = ZonesType.Full
             };
 
-            ZonesPost200? response = await client.Zones.PostAsync(request, cancellationToken: cancellationToken).NoSync();
+            ZonesPost200Response? response = await client.Zones.PostAsync(request, cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to add site - no response received", domainName);
@@ -110,7 +110,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 config.QueryParameters.Name = domainName;
             });
 
-            ZonesGet200? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
+            ZonesGet200Response? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to check site existence - no response received", domainName);
@@ -205,8 +205,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 return false;
             }
 
-            var body = new Zone_identifierDeleteRequestBody();
-            ZonesApiResponseSingleId? response = await client.Zones[zoneId].DeleteAsync(body, null, cancellationToken).NoSync();
+            ZonesApiResponseSingleId? response = await client.Zones[zoneId].DeleteAsync(cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to remove site - no response received", domainName);
@@ -266,7 +265,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 config.QueryParameters.Name = domainName;
             });
 
-            ZonesGet200? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
+            ZonesGet200Response? response = await client.Zones.GetAsync(requestConfig, cancellationToken: cancellationToken).NoSync();
             if (response == null)
             {
                 throw new CloudflareApiException("Failed to get zone details - no response received", domainName);
@@ -323,7 +322,7 @@ public sealed class CloudflareZonesUtil : ICloudflareZonesUtil
                 throw new CloudflareApiException($"Zone not found for domain {domainName}", domainName);
             }
 
-            Zones0Get200? response = await client.Zones[zoneId].GetAsync(cancellationToken: cancellationToken).NoSync();
+            Zones0Get200Response? response = await client.Zones[zoneId].GetAsync(cancellationToken: cancellationToken).NoSync();
 
             if (response == null)
             {
